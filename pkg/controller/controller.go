@@ -158,6 +158,8 @@ func NewController(
 
 // Run starts the K8s workers and the canary scheduler
 func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
+	c.logger.Info("Run")
+
 	defer utilruntime.HandleCrash()
 	defer c.workqueue.ShutDown()
 
@@ -185,6 +187,8 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 }
 
 func (c *Controller) processNextWorkItem() bool {
+	c.logger.Info("processNextWorkItem")
+
 	obj, shutdown := c.workqueue.Get()
 
 	if shutdown {
@@ -220,6 +224,8 @@ func (c *Controller) processNextWorkItem() bool {
 }
 
 func (c *Controller) syncHandler(key string) error {
+	c.logger.Info("syncHandler")
+
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
 		utilruntime.HandleError(fmt.Errorf("invalid resource key: %s", key))

@@ -96,6 +96,8 @@ func init() {
 }
 
 func main() {
+	fmt.Println("START MAIN")
+	
 	flag.Parse()
 
 	if ver {
@@ -115,6 +117,8 @@ func main() {
 
 	stopCh := signals.SetupSignalHandler()
 
+	fmt.Println("START MAIN")
+	logger.Infof("START MAIN")
 	logger.Infof("Starting flagger version %s revision %s mesh provider %s", version.VERSION, version.REVISION, meshProvider)
 
 	cfg, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfig)
@@ -229,6 +233,7 @@ func main() {
 	}()
 
 	// wrap controller run
+	fmt.Println("DEFINING RUN CONTROLLER")
 	runController := func() {
 		if err := c.Run(threadiness, stopCh); err != nil {
 			logger.Fatalf("Error running controller: %v", err)
@@ -243,6 +248,7 @@ func main() {
 		}
 		startLeaderElection(ctx, runController, ns, kubeClient, logger)
 	} else {
+		fmt.Println("CALLING RUN CONTROLLER")
 		runController()
 	}
 }

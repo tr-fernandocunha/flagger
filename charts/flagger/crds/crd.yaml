@@ -81,6 +81,9 @@ spec:
             progressDeadlineSeconds:
               description: Deployment progress deadline
               type: number
+            priorityClassName:
+              description: Priority class that will be used by canary pods
+              type: string
             targetRef:
               description: Target selector
               type: object

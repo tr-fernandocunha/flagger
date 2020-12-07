@@ -193,6 +193,10 @@ func (c *ServiceController) HasTargetChanged(cd *flaggerv1.Canary) (bool, error)
 	return hasSpecChanged(cd, canary.Spec)
 }
 
+func (c *ServiceController) UpdateCanaryPriorityClass(_ *flaggerv1.Canary) error {
+	return nil
+}
+
 // Scale sets the canary deployment replicas
 func (c *ServiceController) ScaleToZero(_ *flaggerv1.Canary) error {
 	return nil

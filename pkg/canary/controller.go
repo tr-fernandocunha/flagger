@@ -14,6 +14,7 @@ type Controller interface {
 	SetStatusIterations(canary *flaggerv1.Canary, val int) error
 	SetStatusPhase(canary *flaggerv1.Canary, phase flaggerv1.CanaryPhase) error
 	Initialize(canary *flaggerv1.Canary) error
+	UpdateCanaryPriorityClass(canary *flaggerv1.Canary) error
 	Promote(canary *flaggerv1.Canary) error
 	HasTargetChanged(canary *flaggerv1.Canary) (bool, error)
 	HaveDependenciesChanged(canary *flaggerv1.Canary) (bool, error)

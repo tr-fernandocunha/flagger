@@ -98,6 +98,10 @@ type CanarySpec struct {
 	// revert canary mutation on deletion of canary resource
 	// +optional
 	RevertOnDeletion bool `json:"revertOnDeletion,omitempty"`
+
+	// PriorityClassName indicates the importance of a Pod relative to other Pods.
+	// +optional
+	PriorityClassName string `json:"priorityClassName,omitempty"`
 }
 
 // CanaryService defines how ClusterIP services, service mesh or ingress routing objects are generated

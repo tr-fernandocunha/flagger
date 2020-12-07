@@ -785,6 +785,12 @@ func (c *Controller) checkCanaryStatus(canary *flaggerv1.Canary, canaryControlle
 		c.alert(canaryPhaseProgressing, "New revision detected, progressing canary analysis.",
 			true, flaggerv1.SeverityInfo)
 
+		// Change priority class if specified
+		if err := canaryController.UpdateCanaryPriorityClass(canary); err != nil {
+			c.recordEventErrorf(canary, "%v", err)
+			return false
+		}
+
 		if err := canaryController.ScaleFromZero(canary); err != nil {
 			c.recordEventErrorf(canary, "%v", err)
 			return false

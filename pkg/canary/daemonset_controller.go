@@ -30,6 +30,25 @@ type DaemonSetController struct {
 	includeLabelPrefix []string
 }
 
+func (c *DaemonSetController) UpdateCanaryPriorityClass(cd *flaggerv1.Canary) error {
+	if cd.Spec.PriorityClassName != "" {
+		targetName := cd.Spec.TargetRef.Name
+		dep, err := c.kubeClient.AppsV1().Deployments(cd.Namespace).Get(context.TODO(), targetName, metav1.GetOptions{})
+		if err != nil {
+			return fmt.Errorf("deployment %s.%s get query error: %w", targetName, cd.Namespace, err)
+		}
+
+		depCopy := dep.DeepCopy()
+		depCopy.Spec.Template.Spec.PriorityClassName = cd.Spec.PriorityClassName
+
+		_, err = c.kubeClient.AppsV1().Deployments(dep.Namespace).Update(context.TODO(), depCopy, metav1.UpdateOptions{})
+		if err != nil {
+			return fmt.Errorf("deployment %s.%s update query error: %w", targetName, cd.Namespace, err)
+		}
+	}
+	return nil
+}
+
 func (c *DaemonSetController) ScaleToZero(cd *flaggerv1.Canary) error {
 	targetName := cd.Spec.TargetRef.Name
 	dae, err := c.kubeClient.AppsV1().DaemonSets(cd.Namespace).Get(context.TODO(), targetName, metav1.GetOptions{})

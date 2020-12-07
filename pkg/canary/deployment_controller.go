@@ -143,6 +143,56 @@ func (c *DeploymentController) HasTargetChanged(cd *flaggerv1.Canary) (bool, err
 	return hasSpecChanged(cd, canary.Spec.Template)
 }
 
+// Updates Canary's priority class according to config
+func (c *DeploymentController) UpdateCanaryPriorityClass(cd *flaggerv1.Canary) error {
+	if cd.Spec.PriorityClassName != "" {
+		fmt.Println("Canary PriorityClassName ===== " + cd.Spec.PriorityClassName)
+		targetName := cd.Spec.TargetRef.Name
+		dep, err := c.kubeClient.AppsV1().Deployments(cd.Namespace).Get(context.TODO(), targetName, metav1.GetOptions{})
+		if err != nil {
+			return fmt.Errorf("deployment %s.%s get query error: %w", targetName, cd.Namespace, err)
+		}
+
+		depCopy := dep.DeepCopy()
+		originalDeploymentPriorityClassName := depCopy.Spec.Template.Spec.PriorityClassName
+		fmt.Println("Original PriorityClassName ===== " + originalDeploymentPriorityClassName)
+
+		depCopy.Spec.Template.Spec.PriorityClassName = cd.Spec.PriorityClassName
+		depCopy.ObjectMeta.Annotations["originalDeploymentPriorityClassName"] = originalDeploymentPriorityClassName
+
+		_, err = c.kubeClient.AppsV1().Deployments(dep.Namespace).Update(context.TODO(), depCopy, metav1.UpdateOptions{})
+		if err != nil {
+			return fmt.Errorf("deployment %s.%s update query error: %w", targetName, cd.Namespace, err)
+		}
+	}
+	return nil
+}
+
+// Reverts target Deployment priorityClassName to it's original definition
+func (c *DeploymentController) RevertCanaryPriorityClass(cd *flaggerv1.Canary) error {
+	if cd.Spec.PriorityClassName != "" {
+		fmt.Println("Identified PriorityClassName in Canary spec as " + cd.Spec.PriorityClassName)
+		targetName := cd.Spec.TargetRef.Name
+		fmt.Println("Identified targetName as " + targetName)
+		dep, err := c.kubeClient.AppsV1().Deployments(cd.Namespace).Get(context.TODO(), targetName, metav1.GetOptions{})
+		if err != nil {
+			return fmt.Errorf("deployment %s.%s get query error: %w", targetName, cd.Namespace, err)
+		}
+
+		depCopy := dep.DeepCopy()
+		deploymentPriorityClass := depCopy.Spec.Template.Spec.PriorityClassName
+		fmt.Println("Identified PriorityClassName in Deployment as " + deploymentPriorityClass)
+
+		depCopy.Spec.Template.Spec.PriorityClassName = cd.Spec.PriorityClassName
+
+		_, err = c.kubeClient.AppsV1().Deployments(dep.Namespace).Update(context.TODO(), depCopy, metav1.UpdateOptions{})
+		if err != nil {
+			return fmt.Errorf("deployment %s.%s update query error: %w", targetName, cd.Namespace, err)
+		}
+	}
+	return nil
+}
+
 // Scale sets the canary deployment replicas
 func (c *DeploymentController) ScaleToZero(cd *flaggerv1.Canary) error {
 	targetName := cd.Spec.TargetRef.Name
